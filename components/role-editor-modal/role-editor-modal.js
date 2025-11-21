@@ -99,6 +99,19 @@ function createRoleEditorModal(options = {}) {
     input.placeholder = placeholder || '';
     field.appendChild(input);
 
+    // Auto-resize textarea on input
+    if (type === 'textarea' || type === 'list') {
+      const autoResize = () => {
+        input.style.height = 'auto';
+        input.style.height = input.scrollHeight + 'px';
+      };
+      input.addEventListener('input', autoResize);
+      // Initial resize if there's pre-filled content
+      if (value) {
+        setTimeout(autoResize, 0);
+      }
+    }
+
     // Add datalist for suggestions if provided
     if (options.suggestions && options.suggestions.length > 0) {
       const datalistId = `datalist-${label.toLowerCase().replace(/\s/g, '-')}`;

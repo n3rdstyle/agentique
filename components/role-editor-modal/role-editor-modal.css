@@ -128,9 +128,10 @@
 }
 
 .role-editor-modal__textarea {
-  resize: vertical;
+  resize: none;
   min-height: 60px;
   max-height: 200px;
+  overflow-y: auto;
 }
 
 .role-editor-modal__textarea--list {
