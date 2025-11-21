@@ -203,22 +203,42 @@ async function getRolesByArea(area) {
 function formatRoleForInjection(role) {
   const sections = [];
 
-  // Header
-  sections.push(`## Role: ${role.name}`);
-  if (role.area) {
-    sections.push(`**Area:** ${role.area}`);
-  }
+  // 1. Role name
+  sections.push(`Role: ${role.name}`);
   sections.push('');
+  sections.push('');
+
+  // 2. Task placeholder
+  sections.push('Task: [Describe your task here]');
+  sections.push('');
+  sections.push('');
+
+  // 3. Context placeholder
+  sections.push('Context: [Add relevant context, data, or background information here]');
+  sections.push('');
+  sections.push('');
+
+  // 4. Role Profile Content
+  sections.push('---');
+  sections.push('');
+  sections.push('Role Profile:');
+  sections.push('');
+
+  // Area
+  if (role.area) {
+    sections.push(`Area: ${role.area}`);
+    sections.push('');
+  }
 
   // Description
   if (role.description) {
-    sections.push(role.description);
+    sections.push(`Description: ${role.description}`);
     sections.push('');
   }
 
   // Skills
   if (role.skills && role.skills.length > 0) {
-    sections.push('### Skills');
+    sections.push('Skills:');
     role.skills.forEach(skill => {
       sections.push(`- ${skill}`);
     });
@@ -227,7 +247,7 @@ function formatRoleForInjection(role) {
 
   // Tools
   if (role.tools && role.tools.length > 0) {
-    sections.push('### Tools');
+    sections.push('Tools:');
     role.tools.forEach(tool => {
       sections.push(`- ${tool}`);
     });
@@ -236,7 +256,7 @@ function formatRoleForInjection(role) {
 
   // Constraints
   if (role.constraints && role.constraints.length > 0) {
-    sections.push('### Constraints');
+    sections.push('Constraints:');
     role.constraints.forEach(constraint => {
       sections.push(`- ${constraint}`);
     });
@@ -245,30 +265,14 @@ function formatRoleForInjection(role) {
 
   // Behavior & Tonality
   if (role.behavior) {
-    sections.push('### Behavior & Tonality');
-    sections.push(role.behavior);
+    sections.push(`Behavior & Tonality: ${role.behavior}`);
     sections.push('');
   }
 
   // Additional Information
   if (role.moreInfo) {
-    sections.push('### Additional Information');
-    sections.push(role.moreInfo);
-    sections.push('');
+    sections.push(`Additional Information: ${role.moreInfo}`);
   }
-
-  // Task placeholder
-  sections.push('---');
-  sections.push('');
-  sections.push('## Task');
-  sections.push('[Describe your task here]');
-  sections.push('');
-
-  // Context placeholder
-  sections.push('---');
-  sections.push('');
-  sections.push('## Context');
-  sections.push('[Add relevant context, data, or background information here]');
 
   return sections.join('\n');
 }
