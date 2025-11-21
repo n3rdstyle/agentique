@@ -1,0 +1,93 @@
+/**
+ * Role List Component
+ * Container for role cards with header and add button
+ */
+
+.role-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.role-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-xs);
+}
+
+.role-list__title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-neutral-90);
+}
+
+.role-list__add-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xxs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: none;
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary-60);
+  color: var(--color-neutral-10);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.role-list__add-button:hover {
+  background-color: var(--color-primary-70);
+}
+
+.role-list__add-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.role-list__cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* Area grouping header */
+.role-list__area-header {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-neutral-50);
+}
+
+.role-list__area-header:first-child {
+  margin-top: 0;
+}
+
+/* Empty state */
+.role-list__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl) var(--spacing-md);
+  text-align: center;
+}
+
+.role-list__empty-text {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  color: var(--color-neutral-60);
+}
+
+.role-list__empty-hint {
+  margin: var(--spacing-xs) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-neutral-50);
+}
