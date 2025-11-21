@@ -27,7 +27,6 @@
 .home__header-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
 }
 
 .home__logo {
@@ -41,30 +40,6 @@
   font-weight: 700;
   color: var(--color-neutral-90);
   letter-spacing: -0.02em;
-}
-
-.home__settings-button {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-neutral-50);
-  border-radius: var(--radius-md);
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-}
-
-.home__settings-button:hover {
-  background-color: var(--color-neutral-20);
-  color: var(--color-neutral-70);
-}
-
-.home__settings-button svg {
-  width: 20px;
-  height: 20px;
 }
 
 /* Content */

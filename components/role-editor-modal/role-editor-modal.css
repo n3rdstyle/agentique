@@ -188,7 +188,7 @@
   padding: var(--spacing-xs) var(--spacing-md);
   border: none;
   border-radius: var(--radius-md);
-  background-color: var(--color-primary-60);
+  background-color: #0B99CC;
   color: var(--color-neutral-10);
   font-size: var(--font-size-sm);
   font-weight: 500;
@@ -197,7 +197,7 @@
 }
 
 .role-editor-modal__save-button:hover {
-  background-color: var(--color-primary-70);
+  background-color: #0A89B8;
 }
 
 .role-editor-modal__save-button:disabled {

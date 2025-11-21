@@ -61,8 +61,7 @@ function renderHomeScreen(roles) {
   currentHomeScreen = createHome({
     roles: roles,
     onRoleSave: handleRoleSave,
-    onRoleDelete: handleRoleDelete,
-    onSettingsClick: handleSettingsClick
+    onRoleDelete: handleRoleDelete
   });
 
   appContainer.appendChild(currentHomeScreen.element);
@@ -122,14 +121,6 @@ async function handleRoleDelete(roleId) {
     alert('Failed to delete role. Please try again.');
     return false;
   }
-}
-
-/**
- * Handle settings click
- */
-function handleSettingsClick() {
-  // TODO: Implement settings screen
-  console.log('[Agentique] Settings clicked - not yet implemented');
 }
 
 // ============================================================================
