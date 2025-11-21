@@ -292,8 +292,8 @@ function onRolesChanged(callback) {
   };
 }
 
-// Export for ES6 modules
-export {
+// Expose globally (loaded as regular script in popup.html)
+const RoleStorage = {
   createRole,
   getAllRoles,
   getRole,
@@ -304,18 +304,3 @@ export {
   formatRoleForInjection,
   onRolesChanged
 };
-
-// Also expose globally for non-module scripts
-if (typeof window !== 'undefined') {
-  window.RoleStorage = {
-    createRole,
-    getAllRoles,
-    getRole,
-    saveRole,
-    deleteRole,
-    getAllAreas,
-    getRolesByArea,
-    formatRoleForInjection,
-    onRolesChanged
-  };
-}
