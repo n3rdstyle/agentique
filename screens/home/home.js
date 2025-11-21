@@ -1,648 +1,168 @@
 /**
- * Home
- * Complete screen combining header, calibration, and content preferences
- * Requires: header.js, calibration.js, content-preferences.js, preference-options.js
+ * Home Screen
+ * Displays role list with add/edit/delete functionality
+ * Requires: header.js, role-list.js, role-card.js, role-editor-modal.js, overlay.js
  */
 
 function createHome(options = {}) {
   const {
-    profileName = 'Dennis',
-    profileSubtitle = '',
-    profileDescription = '',
-    avatarImage = null,
-    email = '',
-    age = '',
-    gender = '',
-    location = '',
-    languages = [],
-    preferencesTitle = 'My Preferences',
-    preferencesData = [],
-    preferenceOptionsButtons = [],
-    onProfileClick = null,
-    onProfileSave = null,
-    getProfileData = null, // New: function to get current profile data
-    onMenuButtonClick = null,
-    onRandomQuestionClick = null,
-    onPreferenceOptionClick = null,
-    onPreferenceOptionsToggle = null,
-    onPreferenceAdd = null,
-    onPreferenceUpdate = null,
-    onPreferenceDelete = null,
-    onRandomQuestionUsed = null, // Callback when a random question is used
-    usedRandomQuestions = [], // Array of already used question texts
-    onBackupData = null,
-    onUpdateData = null,
-    onClearData = null,
-    onDescriptionToggle = null,
-    onPersonalInfoToggle = null,
-    getAutoBackupEnabled = null, // Changed to getter function
-    onAutoBackupToggle = null,
-    getAutoCategorizeEnabled = null, // Getter function for auto-categorize setting
-    onAutoCategorizeToggle = null,
-    onCardSelectionChange = null,  // NEW: Card selection callback for merge feature
-    onMergedInfoClick = null,  // NEW: Merged info click callback
-    onMergeClick = null,  // NEW: Merge button click callback
-    onDeleteSelected = null,  // NEW: Delete selected cards callback
-    isBetaUser = false,
-    onJoinBeta = null,
-    onRevokeBeta = null
+    roles = [],
+    onRoleSave = null,
+    onRoleDelete = null,
+    onSettingsClick = null
   } = options;
 
   // Create home container
   const screenElement = document.createElement('div');
   screenElement.className = 'home';
 
-  // Create modals (hidden by default)
-  let profileModal = null;
-  let profileOverlay = null;
-  let messagesModal = null;
-  let messagesOverlay = null;
-  let settingsScreen = null;
+  // Track current roles
+  let currentRoles = [...roles];
 
-  const openProfile = () => {
-    // Create overlay
-    profileOverlay = createOverlay({
-      opacity: 0.5
-    });
-
-    // Get current profile data (if callback provided, otherwise use initial values)
-    let currentProfileData = {
-      profileName: profileName,
-      profileSubtitle: profileSubtitle,
-      profileDescription: profileDescription,
-      email: email,
-      age: age,
-      gender: gender,
-      location: location,
-      languages: languages
-    };
-
-    if (getProfileData) {
-      currentProfileData = getProfileData();
-    }
-
-    // Create profile screen with current data
-    profileModal = createProfile({
-      profileName: currentProfileData.profileName || currentProfileData.name,
-      profileSubtitle: currentProfileData.profileSubtitle || currentProfileData.subtitle,
-      profileDescription: currentProfileData.profileDescription || currentProfileData.description,
-      descriptionState: currentProfileData.descriptionState,
-      avatarImage: currentProfileData.avatarImage,
-      email: currentProfileData.email,
-      age: currentProfileData.age,
-      gender: currentProfileData.gender,
-      location: currentProfileData.location,
-      languages: currentProfileData.languages,
-      personalInfoState: currentProfileData.emailState || currentProfileData.ageState || currentProfileData.genderState || currentProfileData.locationState,
-      onClose: closeProfile,
-      onSave: onProfileSave,
-      onDescriptionToggle: onDescriptionToggle,
-      onPersonalInfoToggle: onPersonalInfoToggle
-    });
-
-    // Position profile screen centered
-    profileModal.element.style.position = 'absolute';
-    profileModal.element.style.top = '50%';
-    profileModal.element.style.left = '50%';
-    profileModal.element.style.transform = 'translate(-50%, -50%)';
-    profileModal.element.style.zIndex = '1001';
-
-    screenElement.appendChild(profileOverlay.element);
-    screenElement.appendChild(profileModal.element);
-    profileOverlay.show();
+  // Get existing areas for suggestions
+  const getExistingAreas = () => {
+    return [...new Set(currentRoles.map(r => r.area).filter(Boolean))].sort();
   };
 
-  const closeProfile = () => {
-    if (profileOverlay) {
-      profileOverlay.hide();
-      setTimeout(() => {
-        if (profileModal) {
-          profileModal.element.remove();
-          profileModal = null;
+  // Open role editor modal
+  const openRoleEditor = (role = null) => {
+    const modal = createRoleEditorModal({
+      role: role,
+      existingAreas: getExistingAreas(),
+      onSave: async (roleData) => {
+        if (onRoleSave) {
+          const savedRole = await onRoleSave(roleData);
+          if (savedRole) {
+            // Update local state
+            const existingIndex = currentRoles.findIndex(r => r.id === savedRole.id);
+            if (existingIndex >= 0) {
+              currentRoles[existingIndex] = savedRole;
+            } else {
+              currentRoles.push(savedRole);
+            }
+            // Re-render list
+            roleList.setRoles(currentRoles);
+          }
         }
-        if (profileOverlay) {
-          profileOverlay.element.remove();
-          profileOverlay = null;
+      },
+      onDelete: async (roleId) => {
+        if (onRoleDelete) {
+          const success = await onRoleDelete(roleId);
+          if (success) {
+            // Update local state
+            currentRoles = currentRoles.filter(r => r.id !== roleId);
+            // Re-render list
+            roleList.setRoles(currentRoles);
+          }
         }
-      }, 300);
-    }
-  };
-
-  const openMessages = () => {
-    // Create overlay
-    messagesOverlay = createOverlay({
-      opacity: 0.5
+      },
+      onClose: () => {}
     });
-
-    // Create messages modal
-    messagesModal = createMessagesModal({
-      messages: [
-        { id: 1, title: 'Message #1', preview: 'Lorem Ipsum Dolor ...' },
-        { id: 2, title: 'Message #2', preview: 'Lorem Ipsum Dolor ...' },
-        { id: 3, title: 'Message #3', preview: 'Lorem Ipsum Dolor ...' },
-        { id: 4, title: 'Message #4', preview: 'Lorem Ipsum Dolor ...' },
-        { id: 5, title: 'Message #5', preview: 'Lorem Ipsum Dolor ...' }
-      ],
-      onClose: closeMessages,
-      onMessageClick: (message) => {}
-    });
-
-    // Append modal inside overlay (not as sibling)
-    messagesOverlay.element.appendChild(messagesModal.element);
-    screenElement.appendChild(messagesOverlay.element);
-    messagesOverlay.show();
-  };
-
-  const closeMessages = () => {
-    if (messagesOverlay) {
-      messagesOverlay.hide();
-      setTimeout(() => {
-        if (messagesModal) {
-          messagesModal.element.remove();
-          messagesModal = null;
-        }
-        if (messagesOverlay) {
-          messagesOverlay.element.remove();
-          messagesOverlay = null;
-        }
-      }, 300);
-    }
-  };
-
-  const openSettings = () => {
-    // Hide home screen
-    screenElement.style.display = 'none';
-
-    // Create settings screen with current values from getters
-    settingsScreen = createSettings({
-      onClose: closeSettings,
-      onBackupData: onBackupData,
-      onUpdateData: onUpdateData,
-      onClearData: onClearData,
-      autoBackupEnabled: getAutoBackupEnabled ? getAutoBackupEnabled() : false,
-      onAutoBackupToggle: onAutoBackupToggle,
-      autoCategorizeEnabled: getAutoCategorizeEnabled ? getAutoCategorizeEnabled() : true,
-      onAutoCategorizeToggle: onAutoCategorizeToggle,
-      isBetaUser: isBetaUser,
-      onJoinBeta: onJoinBeta,
-      onRevokeBeta: onRevokeBeta
-    });
-
-    // Add settings screen to parent
-    screenElement.parentElement.appendChild(settingsScreen.element);
-  };
-
-  const closeSettings = () => {
-    if (settingsScreen) {
-      settingsScreen.element.remove();
-      settingsScreen = null;
-    }
-    // Show home screen again
-    screenElement.style.display = '';
+    modal.show();
   };
 
   // Create header
   const headerWrapper = document.createElement('div');
   headerWrapper.className = 'home__header';
-  const header = createHeader({
-    profile: {
-      name: profileName,
-      subtitle: profileSubtitle,
-      avatarImage: avatarImage,
-      onClick: openProfile
-    },
-    menuButtons: [
-      { icon: 'settings', ariaLabel: 'Settings', onClick: openSettings }
-    ],
-    onMenuButtonClick
+
+  const header = document.createElement('div');
+  header.className = 'home__header-content';
+
+  const logo = document.createElement('div');
+  logo.className = 'home__logo';
+  logo.innerHTML = `
+    <span class="home__logo-text">Agentique</span>
+  `;
+  header.appendChild(logo);
+
+  const settingsButton = document.createElement('button');
+  settingsButton.className = 'home__settings-button';
+  settingsButton.setAttribute('aria-label', 'Settings');
+  settingsButton.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+    </svg>
+  `;
+  settingsButton.addEventListener('click', () => {
+    if (onSettingsClick) onSettingsClick();
   });
-  headerWrapper.appendChild(header.element);
+  header.appendChild(settingsButton);
 
-  // Create calibration
-  const calibrationWrapper = document.createElement('div');
-  calibrationWrapper.className = 'home__calibration';
-  const calibration = createCalibration({ progress: 0, showLabel: true });
-  calibrationWrapper.appendChild(calibration.element);
+  headerWrapper.appendChild(header);
+  screenElement.appendChild(headerWrapper);
 
-  // Function to update calibration based on card count
-  const updateCalibrationFromCards = () => {
-    const dataList = contentPreferences.getDataList();
-    const cardCount = dataList.getCards().length;
-    const progress = Math.min(cardCount, 100); // 1 card = 1%
-
-    calibration.animateTo(progress, 500);
-
-    // Hide calibration when 100 is reached
-    if (progress >= 100) {
-      calibrationWrapper.style.display = 'none';
-    } else {
-      calibrationWrapper.style.display = '';
-    }
-  };
-
-  // Store reference to preference options (created later)
-  let preferenceOptions = null;
-
-  // Track if any cards are selected (for scroll behavior)
-  let hasSelectedCards = false;
-
-  // Helper function to update quick input bar based on list state
-  const updatePreferenceOptionsState = () => {
-    if (!preferenceOptions) return;
-
-    const dataList = contentPreferences.getDataList();
-    const cardCount = dataList.getCount();
-    const isEmpty = cardCount === 0;
-
-    // Set state: 'empty', 'normal', or 'selection'
-    if (isEmpty) {
-      preferenceOptions.setState('empty');
-    } else if (hasSelectedCards) {
-      // Selection state is handled by onCardSelectionChange
-      // This just ensures we're in the right state initially
-      preferenceOptions.setState('normal');
-    } else {
-      preferenceOptions.setState('normal');
-    }
-  };
-
-  // Create content preferences
+  // Create content wrapper
   const contentWrapper = document.createElement('div');
   contentWrapper.className = 'home__content';
-  const contentPreferences = createContentPreferences({
-    title: preferencesTitle,
-    data: preferencesData, // Use real data from HSP protocol (empty array on first install)
-    modalContainer: screenElement,
-    onSearchStateChange: (isActive) => {
-      // No longer hide preference options - inline search doesn't need this
-      // Buttons remain visible when using inline search field
-    },
-    onListChange: (action, card) => {
-      // Update preference options state when list changes
-      updatePreferenceOptionsState();
-    },
-    onCardStateChange: (card, state) => {
-      // Persist state changes from hover icon buttons
-      if (onPreferenceUpdate) {
-        const cardId = card.getId();
-        onPreferenceUpdate(cardId, {
-          state: state
-        });
+
+  // Create role list
+  const roleList = createRoleList({
+    roles: currentRoles,
+    onRoleClick: (roleId) => {
+      const role = currentRoles.find(r => r.id === roleId);
+      if (role) {
+        openRoleEditor(role);
       }
     },
-    onCardSelectionChange: (selected, card) => {
-      // Check immediately if we should hide the bar BEFORE updating buttons
-      const dataList = contentPreferences.getDataList();
-      const cards = dataList.getCards();
-      const hadSelectedCards = hasSelectedCards;
-      hasSelectedCards = cards.some(c => c.isSelected && c.isSelected());
-
-      // Count selected cards
-      const selectedCount = cards.filter(c => c.isSelected && c.isSelected()).length;
-
-      // If deselecting last card and scrolled, hide instantly before state change
-      if (!hasSelectedCards && hadSelectedCards && preferenceOptions) {
-        const scrollTop = contentWrapper.scrollTop;
-        if (scrollTop > 100) {
-          // Hide bar instantly
-          preferenceOptions.hide();
-
-          // Update state back to normal
-          preferenceOptions.setState('normal');
-
-          // Call parent callback
-          if (onCardSelectionChange) {
-            onCardSelectionChange(selected, card);
-          }
-
-          // Adjust back-to-top button
-          scrollToTopButton.element.style.bottom = '16px';
-          return; // Exit early - already handled
-        }
-      }
-
-      // Normal flow - update state based on selection
-      if (hasSelectedCards) {
-        // Switch to selection mode
-        preferenceOptions.setState('selection');
-        preferenceOptions.setMergeCount(selectedCount);
-        preferenceOptions.setMergeDisabled(selectedCount < 2); // Need at least 2 to merge
-      } else {
-        // Switch back to normal mode
-        preferenceOptions.setState('normal');
-      }
-
-      // Call parent callback
-      if (onCardSelectionChange) {
-        onCardSelectionChange(selected, card);
-      }
-
-      // Show bar if cards are selected
-      if (hasSelectedCards && !hadSelectedCards && preferenceOptions) {
-        preferenceOptions.show();
-      }
-
-      // Always adjust back-to-top button position based on selection state
-      if (hasSelectedCards) {
-        scrollToTopButton.element.style.bottom = '72px'; // Bottom bar height + 16px spacing
-      } else {
-        scrollToTopButton.element.style.bottom = '16px';
+    onRoleEdit: (roleId) => {
+      const role = currentRoles.find(r => r.id === roleId);
+      if (role) {
+        openRoleEditor(role);
       }
     },
-    onCardClick: (card, container) => {
-      // Get all existing tags from all cards (predefined + user-created)
-      const allCards = contentPreferences.getDataList().getCards();
-      const userCollections = allCards.flatMap(c => c.getCollections());
-      const currentCollections = card.getCollections();
-      const predefinedCategories = aiHelper.getPredefinedCategories();
-      // Combine predefined, user-created, and current collections, remove duplicates, and sort alphabetically
-      const existingTags = [...new Set([...predefinedCategories, ...userCollections, ...currentCollections])].sort((a, b) => a.localeCompare(b));
-
-      // Create and show modal when card is clicked
-      const modal = createDataEditorModal({
-        title: 'Edit Preference',
-        preferenceTitle: 'Preference',
-        preferenceText: card.getData(),
-        preferenceTopic: card.getTopic() || '', // Pass existing topic
-        preferenceHidden: card.getState() === 'hidden',
-        preferenceFavorited: card.getState() === 'favorited',
-        collections: card.getCollections(),
-        existingTags: existingTags,
-        autoCategorizeEnabled: getAutoCategorizeEnabled ? getAutoCategorizeEnabled() : true,
-        mergedFrom: card.getMergedFrom(), // Pass merged from data if available
-        onSave: (data) => {
-          // Determine new state
-          let newState = 'default';
-          if (data.favorited) {
-            newState = 'favorited';
-          } else if (data.hidden) {
-            newState = 'hidden';
-          }
-
-          // Save to HSP protocol storage
-          if (onPreferenceUpdate) {
-            const cardId = card.getId();
-            onPreferenceUpdate(cardId, {
-              value: data.text,
-              state: newState,
-              collections: data.collections,
-              topic: data.topic  // Include topic in update
-            });
-            // Close modal after save
-            modal.hide();
-          } else {
-            // Fallback: Update UI only (not persistent)
-            card.setData(data.text);
-            card.setCollections(data.collections);
-            card.setState(newState);
-
-            // Update tag counts
-            contentPreferences.updateTagCounts();
-
-            // Update calibration based on card count
-            updateCalibrationFromCards();
-
-            // Reapply active filter if one exists
-            const activeFilter = contentPreferences.getActiveFilter();
-            if (activeFilter) {
-              if (activeFilter.type === 'state') {
-                contentPreferences.filterByState(activeFilter.value);
-              } else if (activeFilter.type === 'collection') {
-                const dataList = contentPreferences.getDataList();
-                dataList.filterByCollection(activeFilter.value);
-              }
-            }
-
-            modal.hide();
-          }
-        },
-        onDelete: () => {
-          // Save to HSP protocol storage
-          if (onPreferenceDelete) {
-            const cardId = card.getId();
-            onPreferenceDelete(cardId);
-          } else {
-            // Fallback: Remove from UI only (not persistent)
-            const dataList = contentPreferences.getDataList();
-            dataList.removeCard(card);
-
-            // Update tag counts
-            contentPreferences.updateTagCounts();
-
-            // Update calibration
-            updateCalibrationFromCards();
-
-            modal.hide();
+    onRoleDelete: async (roleId) => {
+      if (confirm('Are you sure you want to delete this role?')) {
+        if (onRoleDelete) {
+          const success = await onRoleDelete(roleId);
+          if (success) {
+            currentRoles = currentRoles.filter(r => r.id !== roleId);
+            roleList.setRoles(currentRoles);
           }
         }
-      });
-      modal.show(container);
-    },
-    onMergedInfoClick: onMergedInfoClick // NEW: Pass merged info callback
-  });
-  contentWrapper.appendChild(contentPreferences.element);
-
-  // Create scroll-to-top button
-  const scrollToTopButton = createTertiaryButton({
-    icon: 'arrowUp',
-    ariaLabel: 'Scroll to top',
-    size: 'default',
-    background: 'filled'
-  });
-  scrollToTopButton.element.style.position = 'absolute';
-  scrollToTopButton.element.style.bottom = '16px';
-  scrollToTopButton.element.style.right = '16px';
-  scrollToTopButton.element.style.zIndex = '3'; // Same as merge/trash buttons
-  scrollToTopButton.element.style.opacity = '0';
-  scrollToTopButton.element.style.transform = 'translateY(20px)';
-  scrollToTopButton.element.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-  scrollToTopButton.element.style.pointerEvents = 'none';
-
-  // Get the scrollable container (content wrapper)
-  const scrollableContainer = contentWrapper;
-
-  scrollToTopButton.element.addEventListener('click', () => {
-    scrollableContainer.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  });
-
-  screenElement.appendChild(scrollToTopButton.element);
-
-  // Add scroll listener to hide quick input bar when scrolling
-  let lastScrollTop = 0;
-
-  scrollableContainer.addEventListener('scroll', () => {
-    if (!preferenceOptions) return;
-
-    const currentScrollTop = scrollableContainer.scrollTop;
-
-    // Detect scroll direction
-    if (currentScrollTop > lastScrollTop) {
-      // Scrolling down - hide quick input bar (unless cards are selected), show scroll-to-top button
-      // Keep bar visible if cards are selected (so trash/merge buttons stay visible)
-      if (!hasSelectedCards) {
-        preferenceOptions.hide();
       }
-      scrollToTopButton.element.style.opacity = '1';
-      scrollToTopButton.element.style.transform = 'translateY(0)';
-      scrollToTopButton.element.style.pointerEvents = 'auto';
-    } else {
-      // Scrolling up - show quick input bar, hide scroll-to-top button
-      preferenceOptions.show();
-      scrollToTopButton.element.style.opacity = '0';
-      scrollToTopButton.element.style.transform = 'translateY(20px)';
-      scrollToTopButton.element.style.pointerEvents = 'none';
+    },
+    onAddRole: () => {
+      openRoleEditor(null);
     }
-
-    lastScrollTop = currentScrollTop;
   });
 
-  // Initialize calibration with current card count
-  updateCalibrationFromCards();
-
-  // Create Quick Input Bar component (handles random questions internally)
-  preferenceOptions = createQuickInputBar({
-    onQuickAdd: (text, topic, collections) => {
-      // Quick add from input field - save directly
-      if (text && text.trim()) {
-        if (onPreferenceAdd) {
-          // Pass collections from random question (if available)
-          onPreferenceAdd(text, 'default', collections || [], topic);
-          // Note: renderCurrentScreen() in app.js will rebuild the UI
-        }
-      }
-    },
-    onPlusClick: () => {
-      // Open data editor modal for manual add with full options
-      // Get all existing tags from all cards (predefined + user-created)
-      const allCards = contentPreferences.getDataList().getCards();
-      const userCollections = allCards.flatMap(c => c.getCollections());
-      const predefinedCategories = aiHelper.getPredefinedCategories();
-      const existingTags = [...new Set([...predefinedCategories, ...userCollections])].sort((a, b) => a.localeCompare(b));
-
-      // Open empty Data Editor Modal
-      const modal = createDataEditorModal({
-        title: 'Add Preference',
-        preferenceTitle: 'Preference',
-        preferenceText: '',
-        preferenceHidden: false,
-        preferenceFavorited: false,
-        collections: [],
-        existingTags: existingTags,
-        autoCategorizeEnabled: getAutoCategorizeEnabled ? getAutoCategorizeEnabled() : true,
-        onSave: (data) => {
-          // Only add card if text is not empty
-          if (data.text && data.text.trim()) {
-            // Determine state based on flags
-            let state = 'default';
-            if (data.favorited) {
-              state = 'favorited';
-            } else if (data.hidden) {
-              state = 'hidden';
-            }
-
-            // Save to HSP protocol storage
-            console.log('[Home] Calling onPreferenceAdd with topic:', data.topic);
-            if (onPreferenceAdd) {
-              onPreferenceAdd(data.text, state, data.collections, data.topic);
-              // Note: renderCurrentScreen() in app.js will rebuild the UI
-            } else {
-              // Fallback: Add to UI only (not persistent)
-              const dataList = contentPreferences.getDataList();
-              const newCard = dataList.addCard(data.text, state, data.collections);
-
-              // Move card to the top
-              dataList.element.insertBefore(newCard.element, dataList.element.firstChild);
-
-              // Update tag counts
-              contentPreferences.updateTagCounts();
-
-              // Update calibration
-              updateCalibrationFromCards();
-            }
-          }
-
-          modal.hide();
-        },
-        onDelete: () => {
-          modal.hide();
-        }
-      });
-      modal.show(screenElement);
-    },
-    onRandomQuestionClick: () => {
-      // Open full random question modal (for users who prefer that flow)
-      // This would be triggered by a separate button if we want to keep it
-      // For now, question tags in quick-input-bar handle this inline
-    },
-    onMergeClick: onMergeClick,
-    onDeleteClick: onDeleteSelected,
-    getAutoCategorizeEnabled: getAutoCategorizeEnabled
-  });
-
-  // Assemble screen
-  screenElement.appendChild(headerWrapper);
-  screenElement.appendChild(calibrationWrapper);
+  contentWrapper.appendChild(roleList.element);
   screenElement.appendChild(contentWrapper);
-  screenElement.appendChild(preferenceOptions.element);
-
-  // Initialize quick input bar (loads questions asynchronously)
-  preferenceOptions.initialize();
-
-  // Initialize quick input bar state based on initial data
-  updatePreferenceOptionsState();
 
   // Public API
   return {
     element: screenElement,
 
-    getHeader() {
-      return header;
+    getRoleList() {
+      return roleList;
     },
 
-    getCalibration() {
-      return calibration;
+    setRoles(newRoles) {
+      currentRoles = [...newRoles];
+      roleList.setRoles(currentRoles);
     },
 
-    getContentPreferences() {
-      return contentPreferences;
+    addRole(role) {
+      currentRoles.push(role);
+      roleList.setRoles(currentRoles);
     },
 
-    getPreferenceOptions() {
-      return preferenceOptions;
-    },
-
-    updateCalibration(progress) {
-      calibration.setProgress(progress);
-    },
-
-    animateCalibration(progress, duration) {
-      calibration.animateTo(progress, duration);
-    },
-
-    updateCalibrationFromCards() {
-      updateCalibrationFromCards();
-    },
-
-    updateHeaderProfile(profileData) {
-      // Update the profile teaser in the header
-      if (header && header.updateProfile) {
-        header.updateProfile(profileData);
+    updateRole(roleId, updates) {
+      const index = currentRoles.findIndex(r => r.id === roleId);
+      if (index >= 0) {
+        currentRoles[index] = { ...currentRoles[index], ...updates };
+        roleList.setRoles(currentRoles);
       }
     },
 
-    showPreferenceOptions() {
-      preferenceOptions.show();
+    removeRole(roleId) {
+      currentRoles = currentRoles.filter(r => r.id !== roleId);
+      roleList.setRoles(currentRoles);
     },
 
-    hidePreferenceOptions() {
-      preferenceOptions.hide();
-    },
-
-    togglePreferenceOptions() {
-      preferenceOptions.toggle();
+    openRoleEditor(role = null) {
+      openRoleEditor(role);
     }
   };
 }

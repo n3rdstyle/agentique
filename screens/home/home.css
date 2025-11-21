@@ -1,7 +1,6 @@
 /**
- * Home
- * Full screen layout combining header, calibration, and content preferences
- * Uses spacing system: 24px gap between components, 16px screen padding
+ * Home Screen
+ * Simple layout with header and role list
  */
 
 .home {
@@ -10,28 +9,67 @@
   min-width: 400px;
   height: 600px;
   max-height: 600px;
-  background-color: var(--color-secondary-10);
-  padding: var(--spacing-sm); /* 16px padding on all sides */
+  background-color: var(--color-neutral-10);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-screen-internal); /* 24px between components */
   position: relative;
   box-sizing: border-box;
   overflow: hidden;
 }
 
+/* Header */
 .home__header {
-  /* Header component - uses screen padding */
+  flex-shrink: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-neutral-20);
 }
 
-.home__calibration {
-  /* Calibration component - full width, breaks out of screen padding */
-  margin-left: calc(-1 * var(--spacing-sm)); /* -16px */
-  margin-right: calc(-1 * var(--spacing-sm)); /* -16px */
+.home__header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
+.home__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.home__logo-text {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-neutral-90);
+  letter-spacing: -0.02em;
+}
+
+.home__settings-button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-neutral-50);
+  border-radius: var(--radius-md);
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.home__settings-button:hover {
+  background-color: var(--color-neutral-20);
+  color: var(--color-neutral-70);
+}
+
+.home__settings-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Content */
 .home__content {
-  /* Content preferences component */
   flex: 1;
   overflow-y: auto;
+  padding: var(--spacing-md);
 }
