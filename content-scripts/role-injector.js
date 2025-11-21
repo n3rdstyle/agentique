@@ -300,7 +300,7 @@ function showRoleDropdown() {
     wrapper.style.position = 'relative';
     dropdown.style.position = 'absolute';
     dropdown.style.bottom = 'calc(100% + 8px)';
-    dropdown.style.left = '0';
+    dropdown.style.right = '0';
     wrapper.appendChild(dropdown);
   }
 
