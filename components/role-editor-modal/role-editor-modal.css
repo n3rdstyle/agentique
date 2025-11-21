@@ -1,0 +1,206 @@
+/**
+ * Role Editor Modal Component
+ * Full-screen modal for creating/editing roles
+ */
+
+.role-editor-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-neutral-10);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  pointer-events: none;
+}
+
+.role-editor-modal--visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Header */
+.role-editor-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-neutral-30);
+  flex-shrink: 0;
+}
+
+.role-editor-modal__title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-neutral-90);
+}
+
+.role-editor-modal__close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-neutral-60);
+  border-radius: var(--radius-md);
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.role-editor-modal__close:hover {
+  background-color: var(--color-neutral-20);
+  color: var(--color-neutral-80);
+}
+
+.role-editor-modal__close svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Content */
+.role-editor-modal__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Form Fields */
+.role-editor-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+}
+
+.role-editor-modal__label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-neutral-70);
+}
+
+.role-editor-modal__required {
+  color: var(--color-error-60);
+  margin-left: 2px;
+}
+
+.role-editor-modal__input,
+.role-editor-modal__textarea {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-neutral-40);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-10);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+  color: var(--color-neutral-90);
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.role-editor-modal__input:focus,
+.role-editor-modal__textarea:focus {
+  outline: none;
+  border-color: var(--color-primary-50);
+  box-shadow: 0 0 0 3px var(--color-primary-10);
+}
+
+.role-editor-modal__input::placeholder,
+.role-editor-modal__textarea::placeholder {
+  color: var(--color-neutral-50);
+}
+
+.role-editor-modal__input--error {
+  border-color: var(--color-error-50);
+}
+
+.role-editor-modal__input--error:focus {
+  box-shadow: 0 0 0 3px var(--color-error-10);
+}
+
+.role-editor-modal__textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.role-editor-modal__textarea--list {
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+/* Footer */
+.role-editor-modal__footer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-top: 1px solid var(--color-neutral-30);
+  flex-shrink: 0;
+}
+
+.role-editor-modal__spacer {
+  flex: 1;
+}
+
+.role-editor-modal__delete-button {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-error-60);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.role-editor-modal__delete-button:hover {
+  background-color: var(--color-error-10);
+}
+
+.role-editor-modal__cancel-button {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: 1px solid var(--color-neutral-40);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-10);
+  color: var(--color-neutral-70);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.role-editor-modal__cancel-button:hover {
+  background-color: var(--color-neutral-20);
+  border-color: var(--color-neutral-50);
+}
+
+.role-editor-modal__save-button {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: none;
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary-60);
+  color: var(--color-neutral-10);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.role-editor-modal__save-button:hover {
+  background-color: var(--color-primary-70);
+}
+
+.role-editor-modal__save-button:disabled {
+  background-color: var(--color-neutral-40);
+  cursor: not-allowed;
+}
