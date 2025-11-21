@@ -130,11 +130,95 @@ function createRoleEditorModal(options = {}) {
     return { field, input };
   }
 
+  // Helper to create dynamic list field (individual inputs with add/remove)
+  function createDynamicListField(label, values, placeholder) {
+    const field = document.createElement('div');
+    field.className = 'role-editor-modal__field';
+
+    const labelElement = document.createElement('label');
+    labelElement.className = 'role-editor-modal__label';
+    labelElement.textContent = label;
+    field.appendChild(labelElement);
+
+    const listContainer = document.createElement('div');
+    listContainer.className = 'role-editor-modal__dynamic-list';
+
+    const itemsContainer = document.createElement('div');
+    itemsContainer.className = 'role-editor-modal__dynamic-list-items';
+    listContainer.appendChild(itemsContainer);
+
+    // Function to create a single list item
+    function createListItem(value = '') {
+      const item = document.createElement('div');
+      item.className = 'role-editor-modal__dynamic-list-item';
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'role-editor-modal__input';
+      input.value = value;
+      input.placeholder = placeholder;
+      item.appendChild(input);
+
+      const removeButton = document.createElement('button');
+      removeButton.type = 'button';
+      removeButton.className = 'role-editor-modal__dynamic-list-remove';
+      removeButton.setAttribute('aria-label', 'Remove');
+      removeButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+      `;
+      removeButton.addEventListener('click', () => {
+        item.remove();
+      });
+      item.appendChild(removeButton);
+
+      return item;
+    }
+
+    // Add initial items from values
+    const initialValues = Array.isArray(values) ? values : [];
+    initialValues.forEach(value => {
+      if (value.trim()) {
+        itemsContainer.appendChild(createListItem(value));
+      }
+    });
+
+    // Add button
+    const addButton = document.createElement('button');
+    addButton.type = 'button';
+    addButton.className = 'role-editor-modal__dynamic-list-add';
+    addButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      <span>Add ${label.replace(/s$/, '')}</span>
+    `;
+    addButton.addEventListener('click', () => {
+      const newItem = createListItem('');
+      itemsContainer.appendChild(newItem);
+      newItem.querySelector('input').focus();
+    });
+    listContainer.appendChild(addButton);
+
+    field.appendChild(listContainer);
+
+    // Method to get all values
+    const getValues = () => {
+      const inputs = itemsContainer.querySelectorAll('input');
+      return Array.from(inputs)
+        .map(input => input.value.trim())
+        .filter(value => value.length > 0);
+    };
+
+    return { field, getValues };
+  }
+
   // Create form fields
   const nameField = createField('Name', 'text', role?.name, 'e.g., Web Analyst', { required: true });
   const areaField = createField('Area', 'text', role?.area, 'e.g., Marketing, Development', { suggestions: existingAreas });
   const descriptionField = createField('Description', 'textarea', role?.description, 'Describe this role...', { rows: 3 });
-  const skillsField = createField('Skills', 'list', role?.skills, 'e.g., Data analysis, SQL, Python', { rows: 4 });
+  const skillsField = createDynamicListField('Skills', role?.skills, 'e.g., Data analysis');
   const toolsField = createField('Tools', 'list', role?.tools, 'e.g., Google Analytics, Tableau', { rows: 3 });
   const constraintsField = createField('Constraints', 'list', role?.constraints, 'e.g., Only use verified data sources', { rows: 3 });
   const behaviorField = createField('Behavior & Tonality', 'textarea', role?.behavior, 'How should the AI behave in this role?', { rows: 3 });
@@ -210,7 +294,7 @@ function createRoleEditorModal(options = {}) {
       name: name,
       area: areaField.input.value.trim(),
       description: descriptionField.input.value.trim(),
-      skills: parseList(skillsField.input.value),
+      skills: skillsField.getValues(),
       tools: parseList(toolsField.input.value),
       constraints: parseList(constraintsField.input.value),
       behavior: behaviorField.input.value.trim(),
@@ -260,7 +344,7 @@ function createRoleEditorModal(options = {}) {
       name: nameField.input.value.trim(),
       area: areaField.input.value.trim(),
       description: descriptionField.input.value.trim(),
-      skills: skillsField.input.value.split('\n').map(s => s.trim()).filter(Boolean),
+      skills: skillsField.getValues(),
       tools: toolsField.input.value.split('\n').map(s => s.trim()).filter(Boolean),
       constraints: constraintsField.input.value.split('\n').map(s => s.trim()).filter(Boolean),
       behavior: behaviorField.input.value.trim(),

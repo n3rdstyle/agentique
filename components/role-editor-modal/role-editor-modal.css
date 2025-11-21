@@ -206,3 +206,75 @@
   background-color: var(--color-neutral-40);
   cursor: not-allowed;
 }
+
+/* Dynamic List Field */
+.role-editor-modal__dynamic-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.role-editor-modal__dynamic-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.role-editor-modal__dynamic-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.role-editor-modal__dynamic-list-item .role-editor-modal__input {
+  flex: 1;
+}
+
+.role-editor-modal__dynamic-list-remove {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-neutral-50);
+  border-radius: var(--radius-md);
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.role-editor-modal__dynamic-list-remove:hover {
+  background-color: var(--color-error-10);
+  color: var(--color-error-60);
+}
+
+.role-editor-modal__dynamic-list-remove svg {
+  width: 16px;
+  height: 16px;
+}
+
+.role-editor-modal__dynamic-list-add {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xxs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px dashed var(--color-neutral-40);
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-neutral-60);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.role-editor-modal__dynamic-list-add:hover {
+  border-color: var(--color-neutral-60);
+  color: var(--color-neutral-80);
+}
+
+.role-editor-modal__dynamic-list-add svg {
+  width: 16px;
+  height: 16px;
+}
