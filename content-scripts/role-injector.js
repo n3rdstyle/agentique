@@ -135,66 +135,44 @@ function formatRoleForInjection(role) {
   sections.push('');
   sections.push('');
 
-  // 3. Context placeholder
-  sections.push('Context: [Add relevant context, data, or background information here]');
-  sections.push('');
-  sections.push('');
+  // 3. Role Context (details from extension)
+  const contextParts = [];
 
-  // 4. Role Profile Content
-  sections.push('---');
-  sections.push('');
-  sections.push('Role Profile:');
-  sections.push('');
-
-  // Area
   if (role.area) {
-    sections.push(`Area: ${role.area}`);
-    sections.push('');
+    contextParts.push(`Area: ${role.area}`);
   }
 
-  // Description
   if (role.description) {
-    sections.push(`Description: ${role.description}`);
-    sections.push('');
+    contextParts.push(`Description: ${role.description}`);
   }
 
-  // Skills
   if (role.skills && role.skills.length > 0) {
-    sections.push('Skills:');
-    role.skills.forEach(skill => {
-      sections.push(`- ${skill}`);
-    });
-    sections.push('');
+    contextParts.push('Skills:\n' + role.skills.map(s => `- ${s}`).join('\n'));
   }
 
-  // Tools
   if (role.tools && role.tools.length > 0) {
-    sections.push('Tools:');
-    role.tools.forEach(tool => {
-      sections.push(`- ${tool}`);
-    });
-    sections.push('');
+    contextParts.push('Tools:\n' + role.tools.map(t => `- ${t}`).join('\n'));
   }
 
-  // Constraints
   if (role.constraints && role.constraints.length > 0) {
-    sections.push('Constraints:');
-    role.constraints.forEach(constraint => {
-      sections.push(`- ${constraint}`);
-    });
-    sections.push('');
+    contextParts.push('Constraints:\n' + role.constraints.map(c => `- ${c}`).join('\n'));
   }
 
-  // Behavior & Tonality
   if (role.behavior) {
-    sections.push(`Behavior & Tonality: ${role.behavior}`);
-    sections.push('');
+    contextParts.push(`Behavior & Tonality: ${role.behavior}`);
   }
 
-  // Additional Information
   if (role.moreInfo) {
-    sections.push(`Additional Information: ${role.moreInfo}`);
+    contextParts.push(`Additional Information: ${role.moreInfo}`);
   }
+
+  sections.push('Role Context:');
+  sections.push(contextParts.join('\n\n'));
+  sections.push('');
+  sections.push('');
+
+  // 4. More Context placeholder
+  sections.push('More Context: [Add any additional context, data, or background information here]');
 
   return sections.join('\n');
 }
