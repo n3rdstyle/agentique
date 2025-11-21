@@ -130,6 +130,7 @@
 .role-editor-modal__textarea {
   resize: vertical;
   min-height: 60px;
+  max-height: 200px;
 }
 
 .role-editor-modal__textarea--list {
