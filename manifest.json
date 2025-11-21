@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Data Gems",
-  "version": "2.1.0",
-  "description": "Your personal AI companion for collecting and organizing data gems",
-  "author": "Data Gems Team",
+  "name": "Agentique",
+  "version": "1.0.0",
+  "description": "Inject role context into AI chats to help AI embody specific professional roles",
+  "author": "Agentique Team",
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -20,13 +20,7 @@
     "128": "icons/icon128.png"
   },
   "permissions": [
-    "storage",
-    "unlimitedStorage",
-    "tabs",
-    "offscreen"
-  ],
-  "host_permissions": [
-    "https://n3rdstyle.app.n8n.cloud/*"
+    "storage"
   ],
   "background": {
     "service_worker": "background.js"
@@ -43,47 +37,13 @@
         "https://twitter.com/*"
       ],
       "js": [
-        "content-scripts/context-engine-api.js",
-        "content-scripts/profile-injector.js",
-        "content-scripts/prompt-optimizer.js"
+        "content-scripts/role-injector.js"
       ],
       "css": [
-        "content-scripts/profile-injector.css",
-        "content-scripts/prompt-optimizer.css"
+        "content-scripts/role-injector.css"
       ],
       "run_at": "document_end",
       "all_frames": false
-    },
-    {
-      "matches": [
-        "https://chat.openai.com/*",
-        "https://chatgpt.com/*",
-        "https://claude.ai/*",
-        "https://gemini.google.com/*",
-        "https://grok.com/*",
-        "https://x.com/*",
-        "https://twitter.com/*"
-      ],
-      "js": [
-        "content-scripts/context-engine-bridge-main.js",
-        "utils/ai-helper.js",
-        "utils/context-selector.js"
-      ],
-      "run_at": "document_end",
-      "all_frames": false,
-      "world": "MAIN"
-    }
-  ],
-  "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "complete-questions-catalog.csv",
-        "templates/*.json"
-      ],
-      "matches": ["<all_urls>"]
     }
   ]
 }
