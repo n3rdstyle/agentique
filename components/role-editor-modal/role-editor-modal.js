@@ -219,8 +219,8 @@ function createRoleEditorModal(options = {}) {
   const areaField = createField('Area', 'text', role?.area, 'e.g., Marketing, Development', { suggestions: existingAreas });
   const descriptionField = createField('Description', 'textarea', role?.description, 'Describe this role...', { rows: 3 });
   const skillsField = createDynamicListField('Skills', role?.skills, 'e.g., Data analysis');
-  const toolsField = createField('Tools', 'list', role?.tools, 'e.g., Google Analytics, Tableau', { rows: 3 });
-  const constraintsField = createField('Constraints', 'list', role?.constraints, 'e.g., Only use verified data sources', { rows: 3 });
+  const toolsField = createDynamicListField('Tools', role?.tools, 'e.g., Google Analytics');
+  const constraintsField = createDynamicListField('Constraints', role?.constraints, 'e.g., Only use verified data sources');
   const behaviorField = createField('Behavior & Tonality', 'textarea', role?.behavior, 'How should the AI behave in this role?', { rows: 3 });
   const moreInfoField = createField('Additional Information', 'textarea', role?.moreInfo, 'Any other relevant context...', { rows: 3 });
 
@@ -295,8 +295,8 @@ function createRoleEditorModal(options = {}) {
       area: areaField.input.value.trim(),
       description: descriptionField.input.value.trim(),
       skills: skillsField.getValues(),
-      tools: parseList(toolsField.input.value),
-      constraints: parseList(constraintsField.input.value),
+      tools: toolsField.getValues(),
+      constraints: constraintsField.getValues(),
       behavior: behaviorField.input.value.trim(),
       moreInfo: moreInfoField.input.value.trim()
     };
@@ -345,8 +345,8 @@ function createRoleEditorModal(options = {}) {
       area: areaField.input.value.trim(),
       description: descriptionField.input.value.trim(),
       skills: skillsField.getValues(),
-      tools: toolsField.input.value.split('\n').map(s => s.trim()).filter(Boolean),
-      constraints: constraintsField.input.value.split('\n').map(s => s.trim()).filter(Boolean),
+      tools: toolsField.getValues(),
+      constraints: constraintsField.getValues(),
       behavior: behaviorField.input.value.trim(),
       moreInfo: moreInfoField.input.value.trim()
     })
