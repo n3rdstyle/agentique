@@ -10,18 +10,23 @@ console.log('[Agentique] App loaded');
 // ============================================================================
 
 const SPLASH_DURATION = 1500; // ms
-const SPLASH_SESSION_KEY = 'agentique_splash_shown';
+const SPLASH_STORAGE_KEY = 'agentique_splash_last_shown';
+const SPLASH_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
- * Show splash screen if not shown this session
+ * Show splash screen if not shown today
  * @returns {Promise<void>}
  */
 function showSplashScreen() {
   return new Promise((resolve) => {
-    // Check if already shown this session
-    if (sessionStorage.getItem(SPLASH_SESSION_KEY)) {
-      resolve();
-      return;
+    // Check if already shown within the last 24 hours
+    const lastShown = localStorage.getItem(SPLASH_STORAGE_KEY);
+    if (lastShown) {
+      const elapsed = Date.now() - parseInt(lastShown, 10);
+      if (elapsed < SPLASH_COOLDOWN_MS) {
+        resolve();
+        return;
+      }
     }
 
     const splashScreen = document.getElementById('splash-screen');
@@ -33,8 +38,8 @@ function showSplashScreen() {
     // Show splash screen
     splashScreen.style.display = 'flex';
 
-    // Mark as shown for this session
-    sessionStorage.setItem(SPLASH_SESSION_KEY, 'true');
+    // Mark as shown with current timestamp
+    localStorage.setItem(SPLASH_STORAGE_KEY, Date.now().toString());
 
     // Hide after duration
     setTimeout(() => {
