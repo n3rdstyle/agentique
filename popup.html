@@ -3,17 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Data Gems</title>
+  <title>Agentique</title>
 
   <!-- Preconnect for faster Google Fonts loading -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <!-- Bundled CSS (49 files combined) - Run 'node build-css.cjs' to rebuild -->
-  <link rel="stylesheet" href="popup.bundle.css">
+  <!-- Design System Foundations -->
+  <link rel="stylesheet" href="design-system/colors/colors.css">
+  <link rel="stylesheet" href="design-system/typography/typography.css">
+  <link rel="stylesheet" href="design-system/spacing/spacing.css">
+  <link rel="stylesheet" href="design-system/border-radius/border-radius.css">
+  <link rel="stylesheet" href="design-system/shadows/shadows.css">
 
-  <!-- Google Fonts with font-display: swap for instant text rendering -->
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Component CSS -->
+  <link rel="stylesheet" href="components/overlay/overlay.css">
+  <link rel="stylesheet" href="components/role-card/role-card.css">
+  <link rel="stylesheet" href="components/role-list/role-list.css">
+  <link rel="stylesheet" href="components/role-editor-modal/role-editor-modal.css">
+
+  <!-- Screen CSS -->
+  <link rel="stylesheet" href="screens/home/home.css">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     * {
@@ -37,20 +50,20 @@
       position: relative;
     }
 
-    /* Loading state styles */
+    /* Loading state */
     .app-loading {
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100%;
-      background: #0A0E27;
+      background: var(--color-neutral-10, #FAFAFA);
     }
 
     .app-loading-spinner {
       width: 32px;
       height: 32px;
-      border: 3px solid rgba(138, 133, 255, 0.2);
-      border-top-color: #8A85FF;
+      border: 3px solid var(--color-primary-20, #E8E7FF);
+      border-top-color: var(--color-primary-60, #6366F1);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
@@ -59,16 +72,40 @@
       to { transform: rotate(360deg); }
     }
 
-    /* Hide loading state when app is ready */
     #app:not(:empty) + .app-loading {
       display: none;
+    }
+
+    /* Error screen */
+    .error-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .error-screen__message {
+      color: var(--color-neutral-70, #525252);
+      margin-bottom: 16px;
+    }
+
+    .error-screen__retry {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      background: var(--color-primary-60, #6366F1);
+      color: white;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <div id="app"></div>
 
-  <!-- Loading state (shown while scripts load) -->
+  <!-- Loading state -->
   <div class="app-loading">
     <div class="app-loading-spinner"></div>
   </div>
@@ -76,84 +113,21 @@
   <!-- Icon System -->
   <script src="design-system/icons/icons.js"></script>
 
-  <!-- Utilities -->
-  <script src="utils/hsp-protocol.js"></script>
-  <script src="utils/ai-helper.js"></script>
-  <script src="utils/subcategory-migrator.js"></script>
-  <script src="utils/duplicate-checker.js"></script>
-  <script src="utils/context-selector.js"></script>
-  <script src="utils/question-loader.js"></script>
+  <!-- Services -->
+  <script src="services/role-storage.js"></script>
 
-  <!-- New Services for JSON Template-based Questions -->
-  <script src="services/question-generator.js"></script>
-  <script src="services/template-loader.js"></script>
-  <script src="services/random-question-service.js"></script>
-
-  <!-- Base Elements (must load first) -->
-  <script src="elements/tooltip/tooltip.js"></script>
+  <!-- Base Components -->
   <script src="components/overlay/overlay.js"></script>
-  <script src="components/divider/divider.js"></script>
-  <script src="components/toggle/toggle.js"></script>
-  <script src="components/input-field/input-field.js"></script>
-  <script src="components/dropdown/dropdown.js"></script>
 
-  <!-- Buttons (needed by many components) -->
-  <script src="components/button-primary/button-primary.js"></script>
-  <script src="components/button-secondary/button-secondary.js"></script>
-  <script src="components/button-tertiary/button-tertiary.js"></script>
-
-  <!-- Simple Components -->
-  <script src="components/headline/headline.js"></script>
-  <script src="components/tag/tag.js"></script>
-  <script src="components/tag-list/tag-list.js"></script>
-  <script src="components/search/search.js"></script>
-  <script src="components/text-edit-field/text-edit-field.js"></script>
-  <script src="components/collection-edit-field/collection-edit-field.js"></script>
-  <script src="components/tag-add-field/tag-add-field.js"></script>
-
-  <!-- Data Components -->
-  <script src="components/data-card/data-card.js"></script>
-  <script src="components/data-list/data-list.js"></script>
-
-  <!-- Profile & Menu Components -->
-  <script src="components/profile-teaser/profile-teaser.js"></script>
-  <script src="components/top-menu/top-menu.js"></script>
-  <script src="components/action-button/action-button.js"></script>
-  <script src="components/app-footer/app-footer.js"></script>
-
-  <!-- Complex Components (depend on simpler ones) -->
-  <script src="components/collapsible-section/collapsible-section.js"></script>
-  <script src="components/preference-options/preference-options.js"></script>
-  <script src="components/data-search/data-search.js"></script>
-  <script src="components/header/header.js"></script>
-  <script src="components/calibration/calibration.js"></script>
-
-  <!-- Modals -->
-  <script src="components/data-editor-modal/data-editor-modal.js"></script>
-  <script src="components/tag-add-modal/tag-add-modal.js"></script>
-  <script src="components/collection-filter-modal/collection-filter-modal.js"></script>
-  <script src="components/search-modal/search-modal.js"></script>
-  <script src="components/random-question-modal/random-question-modal.js"></script>
-  <script src="components/quick-input-bar/quick-input-bar.js"></script>
-  <script src="components/messages-modal/messages-modal.js"></script>
-  <script src="components/backup-reminder-modal/backup-reminder-modal.js"></script>
-  <script src="components/beta-checkin-modal/beta-checkin-modal.js"></script>
-  <script src="components/duplicate-consolidation-modal/duplicate-consolidation-modal.js"></script>
-  <script src="components/merge-fab/merge-fab.js"></script>
-  <script src="components/import-progress-bar/import-progress-bar.js"></script>
-
-  <!-- Composite Components -->
-  <script src="components/content-preferences/content-preferences.js"></script>
+  <!-- Role Components -->
+  <script src="components/role-card/role-card.js"></script>
+  <script src="components/role-list/role-list.js"></script>
+  <script src="components/role-editor-modal/role-editor-modal.js"></script>
 
   <!-- Screens -->
   <script src="screens/home/home.js"></script>
-  <script src="screens/profile/profile.js"></script>
-  <script src="screens/settings/settings.js"></script>
 
   <!-- App Logic -->
   <script src="app.js"></script>
-
-  <!-- Context Engine v2 Bridge (Bundled) - Load last -->
-  <script type="module" src="./engine-bridge.bundle.js"></script>
 </body>
 </html>
