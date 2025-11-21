@@ -98,7 +98,19 @@ function setPromptValue(text) {
   const combinedText = currentText + separator + text;
 
   if (currentPlatform.isContentEditable) {
-    promptElement.textContent = combinedText;
+    // For contenteditable, convert newlines to proper HTML
+    // Use <p> tags for paragraphs (double newlines) and <br> for single newlines
+    const htmlContent = combinedText
+      .split('\n\n')
+      .map(paragraph => {
+        // Convert single newlines within paragraphs to <br>
+        const withBreaks = paragraph.split('\n').join('<br>');
+        return `<p>${withBreaks}</p>`;
+      })
+      .join('');
+
+    promptElement.innerHTML = htmlContent;
+
     const event = new Event('input', { bubbles: true });
     promptElement.dispatchEvent(event);
 
