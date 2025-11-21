@@ -6,6 +6,49 @@
 console.log('[Agentique] App loaded');
 
 // ============================================================================
+// SPLASH SCREEN
+// ============================================================================
+
+const SPLASH_DURATION = 1500; // ms
+const SPLASH_SESSION_KEY = 'agentique_splash_shown';
+
+/**
+ * Show splash screen if not shown this session
+ * @returns {Promise<void>}
+ */
+function showSplashScreen() {
+  return new Promise((resolve) => {
+    // Check if already shown this session
+    if (sessionStorage.getItem(SPLASH_SESSION_KEY)) {
+      resolve();
+      return;
+    }
+
+    const splashScreen = document.getElementById('splash-screen');
+    if (!splashScreen) {
+      resolve();
+      return;
+    }
+
+    // Show splash screen
+    splashScreen.style.display = 'flex';
+
+    // Mark as shown for this session
+    sessionStorage.setItem(SPLASH_SESSION_KEY, 'true');
+
+    // Hide after duration
+    setTimeout(() => {
+      splashScreen.classList.add('splash-screen--hidden');
+      // Remove from DOM after transition
+      setTimeout(() => {
+        splashScreen.style.display = 'none';
+        resolve();
+      }, 400);
+    }, SPLASH_DURATION);
+  });
+}
+
+// ============================================================================
 // INITIALIZATION
 // ============================================================================
 
@@ -14,6 +57,9 @@ console.log('[Agentique] App loaded');
  */
 async function initializeApp() {
   console.log('[Agentique] Initializing...');
+
+  // Show splash screen first (only once per session)
+  await showSplashScreen();
 
   try {
     // Load roles from storage
