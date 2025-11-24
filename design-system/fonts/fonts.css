@@ -1,0 +1,13 @@
+/**
+ * Local Font Definitions
+ * Instrument Sans - loaded locally for instant availability
+ */
+
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 400 700; /* Variable font supports 400-700 */
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('./InstrumentSans.woff2') format('woff2');
+}
