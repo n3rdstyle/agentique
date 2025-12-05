@@ -17,24 +17,34 @@ const SPLASH_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
 /**
  * Show splash screen if not shown today
  * Returns a function to hide the splash screen
- * @returns {Function|null} Function to hide splash, or null if not shown
+ * @returns {Function} Function to hide splash (always returns a function)
  */
 function initSplashScreen() {
+  const splashScreen = document.getElementById('splash-screen');
+  if (!splashScreen) {
+    return () => Promise.resolve(); // No splash element, return no-op
+  }
+
   // Check if already shown within the last 24 hours
   const lastShown = localStorage.getItem(SPLASH_STORAGE_KEY);
+  let shouldShow = true;
+
   if (lastShown) {
     const elapsed = Date.now() - parseInt(lastShown, 10);
     if (elapsed < SPLASH_COOLDOWN_MS) {
-      return null; // Don't show splash
+      shouldShow = false; // Don't show splash
     }
   }
 
-  const splashScreen = document.getElementById('splash-screen');
-  if (!splashScreen) {
-    return null;
+  if (!shouldShow) {
+    // Hide immediately without animation
+    console.log('[Agentique] Splash screen already shown today, hiding immediately');
+    splashScreen.style.display = 'none';
+    return () => Promise.resolve(); // Return no-op hide function
   }
 
   // Show splash screen
+  console.log('[Agentique] Showing splash screen');
   splashScreen.style.display = 'flex';
   const startTime = Date.now();
 
@@ -70,11 +80,12 @@ function initSplashScreen() {
 async function initializeApp() {
   console.log('[Agentique] Initializing...');
 
-  // Initialize splash screen (returns hide function or null)
+  // Initialize splash screen (always returns hide function)
   const hideSplash = initSplashScreen();
 
   try {
     // Load roles from storage with timeout
+    console.log('[Agentique] Loading roles from storage...');
     const loadPromise = RoleStorage.getAllRoles();
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Loading timeout')), MAX_SPLASH_DURATION)
@@ -83,13 +94,15 @@ async function initializeApp() {
     const roles = await Promise.race([loadPromise, timeoutPromise]);
     console.log('[Agentique] Loaded', roles.length, 'roles');
 
-    // Hide splash screen if shown
-    if (hideSplash) {
-      await hideSplash();
-    }
+    // Hide splash screen
+    console.log('[Agentique] Hiding splash screen...');
+    await hideSplash();
+    console.log('[Agentique] Splash screen hidden');
 
     // Render the home screen
+    console.log('[Agentique] Rendering home screen...');
     renderHomeScreen(roles);
+    console.log('[Agentique] Home screen rendered');
 
     // Subscribe to storage changes
     RoleStorage.onRolesChanged((newRoles) => {
@@ -102,10 +115,8 @@ async function initializeApp() {
   } catch (error) {
     console.error('[Agentique] Failed to initialize:', error);
 
-    // Hide splash screen if shown
-    if (hideSplash) {
-      await hideSplash();
-    }
+    // Hide splash screen
+    await hideSplash();
 
     renderErrorScreen('Failed to load roles. Please try again.');
   }
