@@ -64,20 +64,18 @@ function fitsInSync(data) {
 }
 
 /**
- * Get storage area (sync or local)
- * @returns {chrome.storage.StorageArea}
+ * Helper to add timeout to promises
+ * @param {Promise} promise
+ * @param {number} ms
+ * @returns {Promise}
  */
-async function getStorageArea() {
-  // Try sync first, fall back to local if quota exceeded
-  try {
-    const syncData = await chrome.storage.sync.get(STORAGE_KEY);
-    if (syncData[STORAGE_KEY] !== undefined || fitsInSync(syncData)) {
-      return chrome.storage.sync;
-    }
-  } catch (error) {
-    console.warn('[RoleStorage] Sync unavailable, using local:', error);
-  }
-  return chrome.storage.local;
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Storage operation timeout')), ms)
+    )
+  ]);
 }
 
 /**
@@ -86,8 +84,11 @@ async function getStorageArea() {
  */
 async function getAllRoles() {
   try {
-    const storage = await getStorageArea();
-    const result = await storage.get(STORAGE_KEY);
+    // Use local storage directly - it's faster and more reliable
+    const result = await withTimeout(
+      chrome.storage.local.get(STORAGE_KEY),
+      2000 // 2 second timeout
+    );
     return result[STORAGE_KEY] || [];
   } catch (error) {
     console.error('[RoleStorage] Failed to get roles:', error);
@@ -129,20 +130,18 @@ async function saveRole(roleData) {
     roles.push(role);
   }
 
-  // Try sync first, fall back to local
+  // Save to local storage with timeout
   const data = { [STORAGE_KEY]: roles };
 
-  if (fitsInSync(data)) {
-    try {
-      await chrome.storage.sync.set(data);
-      console.log('[RoleStorage] Saved to sync:', role.name);
-    } catch (error) {
-      console.warn('[RoleStorage] Sync failed, using local:', error);
-      await chrome.storage.local.set(data);
-    }
-  } else {
-    console.log('[RoleStorage] Data too large for sync, using local');
-    await chrome.storage.local.set(data);
+  try {
+    await withTimeout(
+      chrome.storage.local.set(data),
+      2000 // 2 second timeout
+    );
+    console.log('[RoleStorage] Saved:', role.name);
+  } catch (error) {
+    console.error('[RoleStorage] Failed to save:', error);
+    throw error;
   }
 
   return role;
@@ -163,16 +162,17 @@ async function deleteRole(id) {
 
   const data = { [STORAGE_KEY]: filteredRoles };
 
-  // Save to both to ensure deletion is synced
   try {
-    await chrome.storage.sync.set(data);
+    await withTimeout(
+      chrome.storage.local.set(data),
+      2000 // 2 second timeout
+    );
+    console.log('[RoleStorage] Deleted role:', id);
+    return true;
   } catch (error) {
-    // Ignore sync errors
+    console.error('[RoleStorage] Failed to delete:', error);
+    return false;
   }
-  await chrome.storage.local.set(data);
-
-  console.log('[RoleStorage] Deleted role:', id);
-  return true;
 }
 
 /**

@@ -9,48 +9,55 @@ console.log('[Agentique] App loaded');
 // SPLASH SCREEN
 // ============================================================================
 
-const SPLASH_DURATION = 1500; // ms
+const MIN_SPLASH_DURATION = 800; // ms - minimum time to show splash
+const MAX_SPLASH_DURATION = 3000; // ms - maximum time to show splash
 const SPLASH_STORAGE_KEY = 'agentique_splash_last_shown';
 const SPLASH_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
  * Show splash screen if not shown today
- * @returns {Promise<void>}
+ * Returns a function to hide the splash screen
+ * @returns {Function|null} Function to hide splash, or null if not shown
  */
-function showSplashScreen() {
-  return new Promise((resolve) => {
-    // Check if already shown within the last 24 hours
-    const lastShown = localStorage.getItem(SPLASH_STORAGE_KEY);
-    if (lastShown) {
-      const elapsed = Date.now() - parseInt(lastShown, 10);
-      if (elapsed < SPLASH_COOLDOWN_MS) {
-        resolve();
-        return;
-      }
+function initSplashScreen() {
+  // Check if already shown within the last 24 hours
+  const lastShown = localStorage.getItem(SPLASH_STORAGE_KEY);
+  if (lastShown) {
+    const elapsed = Date.now() - parseInt(lastShown, 10);
+    if (elapsed < SPLASH_COOLDOWN_MS) {
+      return null; // Don't show splash
     }
+  }
 
-    const splashScreen = document.getElementById('splash-screen');
-    if (!splashScreen) {
-      resolve();
-      return;
-    }
+  const splashScreen = document.getElementById('splash-screen');
+  if (!splashScreen) {
+    return null;
+  }
 
-    // Show splash screen
-    splashScreen.style.display = 'flex';
+  // Show splash screen
+  splashScreen.style.display = 'flex';
+  const startTime = Date.now();
 
-    // Mark as shown with current timestamp
-    localStorage.setItem(SPLASH_STORAGE_KEY, Date.now().toString());
+  // Mark as shown with current timestamp
+  localStorage.setItem(SPLASH_STORAGE_KEY, Date.now().toString());
 
-    // Hide after duration
-    setTimeout(() => {
-      splashScreen.classList.add('splash-screen--hidden');
-      // Remove from DOM after transition
+  // Return function to hide splash
+  return () => {
+    return new Promise((resolve) => {
+      const elapsed = Date.now() - startTime;
+      const remainingTime = Math.max(0, MIN_SPLASH_DURATION - elapsed);
+
+      // Wait for minimum duration before hiding
       setTimeout(() => {
-        splashScreen.style.display = 'none';
-        resolve();
-      }, 400);
-    }, SPLASH_DURATION);
-  });
+        splashScreen.classList.add('splash-screen--hidden');
+        // Remove from DOM after transition
+        setTimeout(() => {
+          splashScreen.style.display = 'none';
+          resolve();
+        }, 400);
+      }, remainingTime);
+    });
+  };
 }
 
 // ============================================================================
@@ -63,13 +70,23 @@ function showSplashScreen() {
 async function initializeApp() {
   console.log('[Agentique] Initializing...');
 
-  // Show splash screen first (only once per session)
-  await showSplashScreen();
+  // Initialize splash screen (returns hide function or null)
+  const hideSplash = initSplashScreen();
 
   try {
-    // Load roles from storage
-    const roles = await RoleStorage.getAllRoles();
+    // Load roles from storage with timeout
+    const loadPromise = RoleStorage.getAllRoles();
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Loading timeout')), MAX_SPLASH_DURATION)
+    );
+
+    const roles = await Promise.race([loadPromise, timeoutPromise]);
     console.log('[Agentique] Loaded', roles.length, 'roles');
+
+    // Hide splash screen if shown
+    if (hideSplash) {
+      await hideSplash();
+    }
 
     // Render the home screen
     renderHomeScreen(roles);
@@ -84,6 +101,12 @@ async function initializeApp() {
 
   } catch (error) {
     console.error('[Agentique] Failed to initialize:', error);
+
+    // Hide splash screen if shown
+    if (hideSplash) {
+      await hideSplash();
+    }
+
     renderErrorScreen('Failed to load roles. Please try again.');
   }
 }
